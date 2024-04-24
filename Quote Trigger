@@ -1,0 +1,40 @@
+public class QuoteTriggerHandler {    
+    public static void handleTrigger(List<Quote> newQuotes, Map<Id, Quote> oldMap) {
+        List<Opportunity> toUpdateOpportunities = new List<Opportunity>();
+        List<Quote> toUpdateQuotes = new List<Quote>();
+        Id primaryQuoteId = null;
+        List<Opportunity> opportunities = [SELECT Id, Quote__c, old_primary__c FROM Opportunity WHERE Id = :newQuotes[0].OpportunityId];       
+        for (Quote newQuote : newQuotes) {
+            Opportunity opp = new Opportunity(Id = newQuote.OpportunityId);
+            
+            if (newQuote.Primary_Quote__c) {
+                
+                if (opportunities[0].Quote__c != null) {
+                    primaryQuoteId = opportunities[0].Quote__c;
+                }
+                    system.debug(quote.Id);               
+                    
+                    
+                    opp.old_primary__c = opportunities[0].Quote__c;
+                    system.debug(opp.old_primary__c);
+                    
+                    opp.Quote__c = newQuote.Id;
+                    toUpdateOpportunities.add(opp);
+                }
+            
+        }
+        
+        if (primaryQuoteId != null) {
+            Quote primaryQuote = new Quote(Id = primaryQuoteId, Primary_Quote__c = false);
+            toUpdateQuotes.add(primaryQuote);
+        }
+        
+        if (!toUpdateOpportunities.isEmpty()) {
+            update toUpdateOpportunities;
+        }
+        
+        if (!toUpdateQuotes.isEmpty()) {
+            update toUpdateQuotes;
+        }
+    }
+}
